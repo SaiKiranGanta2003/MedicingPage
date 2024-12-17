@@ -1,0 +1,402 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviewer Page</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+    }
+    header, footer {
+      background-color: #004aad;
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header .logo img {
+      height: 50px;
+      margin-right: 10px;
+    }
+    header .search-bar input {
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      margin-right: 5px;
+    }
+    .container {
+      max-width: 800px;
+      margin-top: 20px;
+    }
+    .form-group label {
+      font-weight: bold;
+    }
+    .form-group select, .form-group input, .form-group textarea {
+      width: 100%;
+    }
+    .btn-submit, .btn-reset {
+      margin-top: 10px;
+    }
+    .comment-section {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+
+    <header>
+      <h2>Medicing Enterprises - Reviewer Page</h2>
+      <hr>
+    </header>
+    <div class="container">
+
+    <h3>Assigned Documents</h3>
+    <div id="documentsList"></div>
+
+    <div id="successMessage" style="display: none;">
+      <p class="alert alert-success">Your comments/signature have been submitted!</p>
+    </div>
+  </div>
+
+  <footer style="position:relative;bottom: 0;width: 100%;">
+    <p>© 2024 Medicing Enterprises</p>
+  </footer>
+
+  <script>
+    // This should ideally be fetched from the Admin page or server, here is a static list for demo purposes
+    const documents = [
+    ];
+
+    // Initialize documents assigned to the reviewer
+    function populateDocuments() {
+      const documentsList = document.getElementById('documentsList');
+      documentsList.innerHTML = ''; // Clear any existing list
+
+      documents.forEach(doc => {
+        const docItem = document.createElement('div');
+        docItem.classList.add('card', 'mb-3');
+        docItem.innerHTML = `
+          <div class="card-body">
+            <h5 class="card-title">${doc.name}</h5>
+            <a href="${doc.fileUrl}" class="btn btn-info" target="_blank">Download Document</a>
+            <div class="form-group mt-3">
+              <label for="signature-${doc.id}">Upload Signature</label>
+              <input type="file" id="signature-${doc.id}" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="comment-${doc.id}">Add Comment</label>
+              <textarea id="comment-${doc.id}" class="form-control" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="submitReview(${doc.id})">Submit Review</button>
+          </div>
+        `;
+        documentsList.appendChild(docItem);
+      });
+    }
+
+    // Submit the review (comment and signature)
+    function submitReview(docId) {
+      const comment = document.getElementById(`comment-${docId}`).value;
+      const signatureFile = document.getElementById(`signature-${docId}`).files[0];
+
+      if (comment && signatureFile) {
+        // Simulate sending a notification to the admin and updating the status page
+        sendNotificationToAdmin(docId, comment, signatureFile);
+
+        // Display success message
+        document.getElementById('successMessage').style.display = 'block';
+        setTimeout(() => {
+          document.getElementById('successMessage').style.display = 'none';
+        }, 3000);
+        
+        // Update the Status Page and Admin page with comment (this would normally be updated in a backend system)
+        updateAdminPage(docId, comment);
+        updateStatusPage(docId, comment);
+      } else {
+        alert('Please add both a comment and upload your signature.');
+      }
+    }
+
+    // Simulate sending a notification to the admin with the comment and signature
+    function sendNotificationToAdmin(docId, comment, signatureFile) {
+      console.log(`Notification sent to Admin for Document ${docId}:`);
+      console.log('Comment:', comment);
+      console.log('Signature File:', signatureFile.name);
+    }
+
+    // Simulate updating the Admin Page with the comment
+    function updateAdminPage(docId, comment) {
+      console.log(`Admin page updated for Document ${docId}. Comment: ${comment}`);
+    }
+
+    // Simulate updating the Status Page with the comment
+    function updateStatusPage(docId, comment) {
+      console.log(`Status page updated for Document ${docId}. Comment: ${comment}`);
+    }
+
+    // Initialize the page by populating the documents
+    populateDocuments();
+  </script>
+
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reviewer Page</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+    }
+    header, footer {
+      background-color: #004aad;
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header h2 {
+      margin: 0;
+    }
+    .container {
+      max-width: 800px;
+      margin: 20px auto;
+    }
+    .table th {
+      background-color: #004aad;
+      color: #fff;
+    }
+    .comment-section, .signature-section {
+      margin-top: 20px;
+    }
+    footer {
+      position: relative;
+      bottom: 0;
+      width: 100%;
+    }
+    #reviewButton {
+      background-color: #004aad;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h2>Medicing Enterprises - Reviewer Page</h2>
+  </header>
+
+  <div class="container">
+    <h3>Assigned Documents</h3>
+
+    <div class="form-group">
+      <label for="email">Reviewer Email:</label>
+      <input type="text" id="email" class="form-control" value="<!-- Dynamic email here -->" readonly>
+    </div>
+
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Reviewers</th>
+          <th>Comments</th>
+          <th>Signature</th>
+          <th>Status</th>
+          <th>Review</th>
+          <th>Signed</th>
+        </tr>
+      </thead>
+      <tbody id="documentsTable">
+        <!-- Dynamic rows here -->
+      </tbody>
+    </table>
+
+    <div id="documentsList" class="comment-section"></div>
+
+  </div>
+
+  <footer style="margin-top: 20px;">
+    <p>&copy; 2024 Medicing Enterprises - All Rights Reserved</p>
+  </footer>
+
+  <script>
+    function getEmailFromURL() {
+      // Parse the URL query string
+      const urlParams = new URLSearchParams(window.location.search);
+      // Get the 'email' parameter
+      const email = urlParams.get('email');
+      console.log(email);
+      // Populate the input field with the email
+      if (email) {
+        document.getElementById('email').value = decodeURIComponent(email);
+      } else {
+        alert('Email parameter is missing in the URL.');
+      }
+    }
+
+    // Call the function after the DOM is fully loaded
+    document.addEventListener('DOMContentLoaded', getEmailFromURL);
+
+
+    async function populateDocuments(documentName) {
+      const documentsList = document.getElementById("documentsTable");
+      documentsList.innerHTML = '';
+
+      try {
+        const response = await fetch('/documents/details', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({documentName})
+          
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch document details');
+        }
+
+        const documentDetails = await response.json();
+
+        if (!documentDetails) {
+          documentsList.innerHTML = "<p>No details available for this document.</p>";
+          return;
+        }
+        console.log(response);
+
+        documentsList.innerHTML = `
+  
+        <tr>
+          <td><button class="btn btn-link" onclick="populateDocuments('${
+            doc.name
+          }')">${doc.name}</button></td>
+          <td>${doc.reviewers.join(", ")}</td>
+          <td>${doc.comments || "N/A"}</td>
+          <td>${doc.signature || "N/A"}</td>
+          <td>${doc.status}</td>
+          <td><button id="reviewButton" onclick='reviewDocument("${
+            doc.name
+          }")'>Review</button></td>
+          <td><button id="reviewButton" onclick='SignedDocument("${
+            doc.name
+          }")'>Signed</button></td>
+        </tr>
+      `;
+      } catch (error) {
+        console.error('Error fetching document details:', error);
+        documentsList.innerHTML = "<p>Error loading document details.</p>";
+      }
+    }
+
+    async function reviewDocument(documentName) {
+      try {
+        const email=document.getElementById("email").value;
+        window.location.href = `reviewerPageOpen.html?documentName=${encodeURIComponent(documentName)}&email=${encodeURIComponent(email)}`;
+      } catch (error) {
+        console.error('Error navigating to reviewer page:', error);
+      }
+    }
+
+    async function submitSignature(documentName) {
+      const signature = document.getElementById('signature').value;
+      try {
+        const response = await fetch('/documents/signature', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentName, signature })
+        });
+
+        if (response.ok) {
+          alert('Signature submitted successfully!');
+        } else {
+          alert('Failed to submit signature.');
+        }
+      } catch (error) {
+        console.error('Error submitting signature:', error);
+      }
+    }
+
+    async function submitComment(documentName) {
+      const comment = document.getElementById('comment').value;
+      try {
+        const response = await fetch('/documents/comment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ documentName, comment })
+        });
+
+        if (response.ok) {
+          alert('Comment submitted successfully!');
+        } else {
+          alert('Failed to submit comment.');
+        }
+      } catch (error) {
+        console.error('Error submitting comment:', error);
+      }
+    }
+
+    populate()
+    async function populate(){
+
+      const documentsList = document.getElementById("documentsTable");
+      const response = await fetch('/reviwerDoc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({reviewerMail: document.getElementById('email').value})
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch document details');
+      }
+
+      const documentDetails = await response.json();
+
+      if (!documentDetails) {
+        documentsList.innerHTML = "<p>No details available for this document.</p>";
+        return;
+      }
+      console.log(response);
+
+      documentDetails.forEach(doc => {
+        documentsList.innerHTML += `
+        <tr>
+          <td><button class="btn btn-link" onclick="populateDocuments('${
+            doc.name
+          }')">${doc.name}</button></td>
+          <td>${doc.reviewers.join(", ")}</td>
+          <td>${doc.comments || "N/A"}</td>
+          <td>${doc.signature || "N/A"}</td>
+          <td>${doc.status}</td>
+          <td><button id="reviewButton" onclick='reviewDocument("${
+            doc.name
+          }")'>Review</button></td>
+          <td><button id="reviewButton" onclick='SignedDocument("${
+            doc.name
+          }")'>Signed</button></td>
+        </tr>
+      `;
+      });
+    }
+  </script>
+
+</body>
+</html>

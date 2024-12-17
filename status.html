@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document status Page</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+
+header, footer {
+      background-color: #004aad;
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+    }
+    .container {
+      max-width: 800px;
+      margin-top: 20px;
+    }
+    .form-group label {
+      font-weight: bold;
+    }
+    .form-group select, .form-group input, .form-group textarea {
+      width: 100%;
+    }
+    .btn-submit, .btn-reset {
+      margin-top: 10px;
+    }
+    .comment-section {
+      margin-top: 20px;
+    }
+    #documentsTable{
+      width: 100%;
+      box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    th,td{
+      padding: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+
+    <header>
+      <h2>Medicing Enterprises - DocumentStatus Page</h2>
+      <hr>
+    </header>
+    <div class="container">
+    <!-- Reviewer Section -->
+    <h3>Assigned Documents</h3>
+    <div id="documentsList">
+      <table id="documentsTable" border="1">
+        <thead>
+        <tr style="background-color: #004aad; color: #fff;">
+          <th>DocumentName</th>
+          <th>Signature</th>
+          <th>Comments</th>
+          <th>approver/rejected</th>
+        </tr>
+      </thead>
+      <tbody id="document-tracking">
+
+      </tbody>
+
+        
+      </table>
+    </div>
+    <!-- Success Message -->
+    <div id="successMessage" style="display: none;">
+      <p class="alert alert-success">Your comments/signature have been submitted!</p>
+    </div>
+  </div>
+
+  <footer class="mt-5" style="position:relative ;bottom: 0;width: 100%;">
+    <p>© 2024 Medicing Enterprises</p>
+  </footer>
+
+  <!-- Script -->
+  <script>
+    // This should ideally be fetched from the Admin page or server, here is a static list for demo purposes
+<<<<<<< HEAD
+    // const documents = [
+    //   { id: 1, name: 'Document 1', fileUrl: 'https://example.com/document1.pdf', reviewers: ['reviewer1@example.com', 'reviewer2@example.com'], approver: 'approver@example.com' },
+    //   { id: 2, name: 'Document 2', fileUrl: 'https://example.com/document2.pdf', reviewers: ['reviewer1@example.com'], approver: 'approver@example.com' }
+    // ];
+=======
+    const documents = [
+      { id: 1, name: 'Document 1', fileUrl: 'https://example.com/document1.pdf', reviewers: ['reviewer1@example.com', 'reviewer2@example.com'], approver: 'approver@example.com' },
+    ];
+>>>>>>> 7ac40b5e587579e770463fe95096731e517bb78d
+
+    // Initialize documents assigned to the reviewer
+    /*
+      function populateDocuments() {
+      const documentsList = document.getElementById('documentsList');
+      documentsList.innerHTML = ''; // Clear any existing list
+
+      documents.forEach(doc => {
+        const docItem = document.createElement('div');
+        docItem.classList.add('card', 'mb-3');
+        docItem.innerHTML = `
+          <div class="card-body">
+            <h5 class="card-title">${doc.name}</h5>
+            <a href="${doc.fileUrl}" class="btn btn-info" target="_blank">Download Document</a>
+            <div class="form-group mt-3">
+              <label for="signature-${doc.id}">Upload Signature</label>
+              <input type="file" id="signature-${doc.id}" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label for="comment-${doc.id}">Add Comment</label>
+              <textarea id="comment-${doc.id}" class="form-control" rows="3"></textarea>
+            </div>
+            <button class="btn btn-primary" onclick="submitReview(${doc.id})">Submit Review</button>
+          </div>
+        `;
+        documentsList.appendChild(docItem);
+      });
+    } */
+    // Submit the review (comment and signature)
+    // function submitReview(docId) {
+    //   const comment = document.getElementById(`comment-${docId}`).value;
+    //   const signatureFile = document.getElementById(`signature-${docId}`).files[0];
+
+    //   if (comment && signatureFile) {
+    //     // Simulate sending a notification to the admin and updating the status page
+    //     sendNotificationToAdmin(docId, comment, signatureFile);
+
+    //     // Display success message
+    //     document.getElementById('successMessage').style.display = 'block';
+    //     setTimeout(() => {
+    //       document.getElementById('successMessage').style.display = 'none';
+    //     }, 3000);
+        
+    //     // Update the Status Page and Admin page with comment (this would normally be updated in a backend system)
+    //     updateAdminPage(docId, comment);
+    //     updateStatusPage(docId, comment);
+    //   } else {
+    //     alert('Please add both a comment and upload your signature.');
+    //   }
+    // }
+
+    // // Simulate sending a notification to the admin with the comment and signature
+    // function sendNotificationToAdmin(docId, comment, signatureFile) {
+    //   console.log(`Notification sent to Admin for Document ${docId}:`);
+    //   console.log('Comment:', comment);
+    //   console.log('Signature File:', signatureFile.name);
+    // }
+
+    // // Simulate updating the Admin Page with the comment
+    // function updateAdminPage(docId, comment) {
+    //   console.log(`Admin page updated for Document ${docId}. Comment: ${comment}`);
+    // }
+
+    // // Simulate updating the Status Page with the comment
+    // function updateStatusPage(docId, comment) {
+    //   console.log(`Status page updated for Document ${docId}. Comment: ${comment}`);
+    // }
+
+    // // Initialize the page by populating the documents
+    // populateDocuments();
+  </script>
+
+</body>
+</html>

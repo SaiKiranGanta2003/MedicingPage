@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register page</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <style>
+        *{
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+
+
+        .validation {
+            list-style: none;
+            padding: 0;
+        }
+
+        .validation li {
+            margin: 5px 0;
+            color: red; /* Default color is red */
+        }
+
+        .validation li.valid {
+            color: rgb(6, 184, 6); /* Turns green when valid */
+            text-decoration: line-through;
+        }
+
+    </style>
+</head>
+
+
+<body>
+    <header class="bg-primary" style="width: 100%;position: relative;top:0;padding: 20px;color: white;">
+        <h3>Medicing Enterprises</h3>
+    </header>
+
+    <div class="container mt-5" style="max-width:400px">
+        <h2>Create Password</h2>
+        <form id="mailForm">
+            <label for="user-email" class="form-label">Email</label>
+            <input type="email" id="user-email" class="form-control" placeholder="Enter user email" required>
+            <button id="search-user" class="btn btn-primary mt-2">Search User</button>
+        </form>
+        <form id="passwordForm" style="display: none;">
+            <label class="form-label mt-3" for="password">Enter Password:</label>
+            <input class="form-control" type="password" id="user-password" placeholder="Enter your password" required>
+            <ul class="validation" id="validation-list">
+                <li id="digit">Must contain at least one digit</li>
+                <li id="special-char">Must contain at least one special character (!@#$%^&*)</li>
+                <li id="uppercase">Must contain at least one uppercase letter</li>
+                <li id="lowercase">Must contain at least one lowercase letter</li>
+                <li id="length">Must be at least 8 characters long</li>
+            </ul>
+            <label class="form-label mt-3" for="ConPassword">Confirm Password:</label>
+            <input class="form-control" type="password" id="ConPassword" placeholder="Enter your password" required>
+            <button id="submit-button" class="btn btn-primary" disabled>Submit</button>
+        </form>
+    </div>
+
+    <footer class="mt-5 bg-primary" style="width: 100%;position: relative;bottom:0;padding: 20px;color: white;">
+        <p>&copy; <span id="year"></span> Medicing Enterprises. All rights reserved.</p>
+    </footer>
+
+
+    <script>
+        var Useremail;
+        const passwordInput = document.getElementById('user-password');
+        const digit = document.getElementById('digit');
+        const specialChar = document.getElementById('special-char');
+        const uppercase = document.getElementById('uppercase');
+        const lowercase = document.getElementById('lowercase');
+        const length = document.getElementById('length');
+        const submitButton = document.getElementById('submit-button');
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+        document.getElementById('mailForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            var Useremail = document.getElementById('user-email').value;
+            const userDeatils = await fetch('/searchUser', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ email: Useremail })})
+                .then(response =>response.json())
+            
+            if( userDeatils.length==0){
+                alert("user not found")
+                document.getElementById('passwordForm').style.display = 'none';
+            }else{
+                if (userDeatils[0].password === '' || userDeatils[0].password === null || userDeatils[0].password === undefined) {
+                //here you can redirect to the password creation page
+                document.getElementById('passwordForm').style.display = 'block';
+                var Useremail = document.getElementById('user-email');
+                Useremail.readOnly = true;
+                var email=Useremail.value
+                const updateStatus=await fetch('/updateStatus', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ email: email })
+
+                })
+                }
+                else{
+                    alert("Password already created")
+                    window.location.href = './index.html';
+                }
+            }
+
+        });
+
+        function validatePassword() {
+            const password = passwordInput.value;
+
+            // Validate at least one digit
+            if (/\d/.test(password)) {
+                digit.classList.add('valid');
+            } else {
+                digit.classList.remove('valid');
+            }
+
+            // Validate at least one special character
+            if (/[!@#$%^&*]/.test(password)) {
+                specialChar.classList.add('valid');
+            } else {
+                specialChar.classList.remove('valid');
+            }
+
+            // Validate at least one uppercase letter
+            if (/[A-Z]/.test(password)) {
+                uppercase.classList.add('valid');
+            } else {
+                uppercase.classList.remove('valid');
+            }
+
+            // Validate at least one lowercase letter
+            if (/[a-z]/.test(password)) {
+                lowercase.classList.add('valid');
+            } else {
+                lowercase.classList.remove('valid');
+            }
+
+            // Validate minimum length of 8 characters
+            if (password.length >= 8) {
+                length.classList.add('valid');
+            } else {
+                length.classList.remove('valid');
+            }
+
+            // Enable or disable the submit button
+            const allValid = [digit, specialChar, uppercase, lowercase, length].every(
+                (item) => item.classList.contains('valid')
+            );
+            submitButton.disabled = !allValid;
+        }
+
+        passwordInput.addEventListener('input', validatePassword);
+
+        document.getElementById('passwordForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            var Userpassword = document.getElementById('user-password').value;
+            var Useremail = document.getElementById('user-email').value;
+            if(Userpassword !== document.getElementById('ConPassword').value){
+                alert("Password Does not match");
+                return;
+            }
+
+            const userDeatils = await fetch('/createPassword', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ password: Userpassword,email:Useremail})})
+                .then(response =>response.json())
+            console.log(userDeatils);
+            window.location.href = './index.html';
+        });
+
+
+
+    </script>
+
+</body>
+
+</html>

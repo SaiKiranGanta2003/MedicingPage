@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document Approval Form</title>
+  <style>
+    /* General Styles */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 20px;
+      background-color: #f4f4f9;
+    }
+
+    .container {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    h3 {
+      margin-bottom: 5px;
+      color: #333;
+    }
+
+    .company-name {
+      margin: 0 0 10px 0;
+      font-weight: bold;
+      color: #555;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+
+    th,
+    td {
+      border: 1px solid #ccc;
+      text-align: center;
+      padding: 8px;
+    }
+
+    th {
+      background-color: #004aad;
+      color: #fff;
+    }
+
+    td button {
+      padding: 5px 10px;
+      background-color: #004aad;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    td button:hover {
+      background-color: #003580;
+    }
+
+    td .date {
+      font-size: 14px;
+      color: #333;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- Prepared By Section -->
+    <h3>Prepared By</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Name & Designation</th>
+          <th>Signature</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="preparedTable">
+
+      </tbody>
+    </table>
+
+    <!-- Reviewed By Section -->
+    <h3>Reviewed By</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Name & Designation</th>
+          <th>Signature</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="reviewersTable">
+
+      </tbody>
+    </table>
+
+    <!-- Approved By Section -->
+    <h3>Approved By</h3>
+    <table>
+      <thead>
+        <tr>
+          <th>Department</th>
+          <th>Name & Designation</th>
+          <th>Signature</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody id="approverPage">
+
+      </tbody>
+    </table>
+  </div>
+
+  <script>
+    // Function to simulate adding a signature and the current date
+    function addSignature(button) {
+      const currentDate = new Date();
+      const formattedDate = currentDate.toISOString().split("T")[0];
+
+      // Update the signature button and date
+      button.textContent = "Signed";
+      button.disabled = true;
+      const dateCell = button.parentElement.nextElementSibling;
+      dateCell.textContent = formattedDate;
+
+      alert("Signature added successfully!");
+    }
+
+
+    async function getDocumentname() {
+      try {
+        const response = await fetch('/documents/getDocumentName', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          console.log(data)
+          console.log(data.documentName.user);
+          try {
+            const UserData =
+              await fetch('/users/getUsers', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: data.documentName.user })
+              }).then(response => response.json());
+            console.log("UserData", UserData)
+
+            document.getElementById("preparedTable").innerHTML = `
+              <tr>
+                <td>${UserData[0].Department}</td>
+                <td>${UserData[0].name}&${UserData[0].Designation}</td>
+                <td><button onclick="addSignature(this)">Sign</button></td>
+                <td><span class="date"></span></td>
+              </tr>
+            `;
+
+            console.log(UserData.reviewers);
+
+            // // reviwersTable
+            // document.getElementById("reviewersTable").innerHTML = `
+            //   <tr>
+            //     <td>${UserData[0].Department}</td>
+            //     <td>${UserData[0].name}&${UserData[0].Designation}</td>
+            //     <td><button onclick="addSignature(this)">Sign</button></td>
+            //     <td><span class="date"></span></td>
+            //   </tr>
+            // `;
+          }
+          catch (error) {
+            console.log(error)
+          }
+        } else {
+          throw new Error('Failed to fetch document name.');
+        }
+      } catch (error) {
+        console.error('Error fetching document name:', error);
+        return null;
+      }
+
+
+
+    }
+
+
+
+    async function addReviwers() {
+      const response = await fetch('/documents/getDocumentName', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        console.log(data)
+        console.log(data.documentName.reviewers);
+        data.documentName.reviewers.forEach(async (reviewer) => {
+          const reviewerData = await fetch('/users/getUsers', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: reviewer })
+          }).then(response => response.json());
+          console.log("reviewerData", reviewerData)
+          document.getElementById("reviewersTable").innerHTML += `
+              <tr>
+                <td>${reviewerData[0].Department}</td>
+                <td>${reviewerData[0].name}&${reviewerData[0].Designation}</td>
+                <td><button onclick="addSignature(this)">Sign</button></td>
+                <td><span class="date"></span></td>
+              </tr>
+            `;
+        })
+
+      }
+    }
+
+
+    async function addApprover() {
+      const response = await fetch('/documents/getDocumentName', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (response.ok) {
+        const data = await response.json();
+        try {
+            const UserData =
+              await fetch('/users/getUsers', {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ email: data.documentName.approver })
+              }).then(response => response.json());
+
+            document.getElementById("approverPage").innerHTML = `
+              <tr>
+                <td>${UserData[0].Department}</td>
+                <td>${UserData[0].name}&${UserData[0].Designation}</td>
+                <td><button onclick="addSignature(this)">Sign</button></td>
+                <td><span class="date"></span></td>
+              </tr>
+            `;
+
+        }
+        catch (error) {
+          console.log(error)
+        
+        }
+
+      }}
+    
+    addApprover();
+    addReviwers()
+    getDocumentname()
+
+  </script>
+</body>
+
+</html>

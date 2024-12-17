@@ -1,0 +1,688 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Dashboard - Medicing Enterprises</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    header,
+    footer {
+      background-color: #004aad;
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header .logo img {
+      height: 50px;
+      margin-right: 10px;
+    }
+
+    header .search-bar input {
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      margin-right: 5px;
+    }
+
+    #user-email {
+      width: 100%;
+    }
+
+    header .search-bar button {
+      padding: 8px 12px;
+      background-color: #fff;
+      border: none;
+      color: #004aad;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    header .search-bar button:hover {
+      background-color: #003680;
+    }
+
+    #user-name {
+      width: 100%;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 14px;
+    }
+
+    footer a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    .form-section {
+      margin-bottom: 40px;
+    }
+
+    .form-section input,
+    .form-section select {
+      padding: 10px;
+      margin-bottom: 10px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .form-section input {
+      width: max-content;
+    }
+
+    .form-section button {
+      padding: 10px;
+      background-color: #004aad;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .form-section button:hover {
+      background-color: #003680;
+    }
+
+    #removeBtn {
+      background-color: transparent;
+      border: 0;
+      outline: 0;
+      cursor: pointer;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table th,
+    table td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    table th {
+      background-color: #004aad;
+      color: #fff;
+    }
+
+    #btn {
+      background-color: rgb(248, 0, 0);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 5px;
+      border: none;
+    }
+
+    #btn:hover {
+      background-Color: rgb(199, 0, 0);
+      cursor: pointer;
+    }
+
+    #addBtn {
+      margin-left: 5px;
+      padding: 0px 5px;
+      outline: 0;
+      border: none;
+      background-color: transparent;
+      cursor: pointer;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header>
+    <div class="logo">
+      <h1>Medicing Enterprises - User Dashboard</h1>
+    </div>
+  </header>
+
+  <!-- Admin Dashboard Content -->
+  <div class="container">
+    <h2>User Dashboard</h2>
+
+    <!-- User Management Section -->
+    <div class="form-section">
+      <h3>Manage Users</h3>
+      <form id="user-form">
+        <input type="text" id="user-name" placeholder="Full Name" required>
+        <input type="email" id="user-email" placeholder="Email" required>
+        <select id="user-role" required>
+          <option value="">Select Role</option>
+          <option value="Reviewer">Reviewer</option>
+          <option value="Approver">Approver</option>
+        </select>
+        <button type="submit">Add User</button>
+      </form>
+      <div id="user-list"></div> <!-- Display added users here -->
+    </div>
+
+    <!-- Document Upload Section -->
+    <div class="form-section">
+      <h3>Upload Documents</h3>
+      <form id="upload-form">
+        <input type="file" id="document-file" required>
+        <br>
+        <label for="reviewers">Select Reviewers:</label>
+        <div id="reviewers-checkboxes"></div>
+        <label for="approver">Select Approver:</label>
+        <select id="approver" required></select>
+        <button type="submit">Upload Document</button>
+      </form>
+      <div id="reviewers-info"></div>
+    </div>
+
+    <!-- Document Tracking Section -->
+    <div>
+      <h3>Document Tracking</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Date</th>
+            <th>Reviewer(s)</th>
+            <th>Approver</th>
+            <th>Status</th>
+            <th>Resend</th>
+          </tr>
+        </thead>
+        <tbody id="document-tracking">
+          <!-- Dynamic rows will be added here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; <span id="year"></span> Medicing Enterprises. All rights reserved.</p>
+  </footer>
+
+  <script>
+    let logoutTimer
+    const queryString = window.location.search;
+    const email = queryString.startsWith('?') ? decodeURIComponent(queryString.slice(1).split('=')[0]) : null;
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const users = [];
+    const documents = [];
+    document.getElementById('user-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const userName = document.getElementById('user-name').value;
+      const userEmail = document.getElementById('user-email').value;
+      const userRole = document.getElementById('user-role').value;
+
+      // Check if email already exists
+      if (users.some(user => user.email === userEmail)) {
+        alert('Error: This email is already in use.');
+        return;
+      }
+
+      const newUser = { name: userName, email: userEmail, role: userRole };
+      users.push(newUser);
+      displayUsers();
+      saveToDB(newUser);
+      alert(`User ${newUser.name} (${newUser.email}) added as ${newUser.role}.`);
+
+      document.getElementById('user-form').reset();
+    });
+
+    // Function to display users in the Manage Users section
+    function displayUsers() {
+      const userList = document.getElementById('user-list');
+      userList.innerHTML = '';
+      users.forEach(user => {
+        const userDiv = document.createElement('div');
+        userDiv.textContent = `${user.name} (${user.email}) - ${user.role}`;
+        userList.appendChild(userDiv);
+      });
+
+      // Update the reviewer and approver selection options in the Upload Documents section
+      const reviewersSelect = document.getElementById('reviewers-checkboxes');
+      const approverSelect = document.getElementById('approver');
+
+      reviewersSelect.innerHTML = '';
+      approverSelect.innerHTML = '';
+
+      const selectAllCheckbox = document.createElement('input');
+      selectAllCheckbox.type = 'checkbox';
+      selectAllCheckbox.id = 'select-all';
+      selectAllCheckbox.addEventListener('change', toggleAllReviewers);
+      const selectAllLabel = document.createElement('label');
+      selectAllLabel.textContent = 'Select All Reviewers';
+      const brek = document.createElement('br');
+      reviewersSelect.appendChild(selectAllCheckbox);
+      reviewersSelect.appendChild(selectAllLabel);
+      reviewersSelect.appendChild(brek);
+
+      users.forEach(user => {
+        if (user.role === 'Reviewer') {
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = user.email;
+          checkbox.id = `reviewer-${user.email}`;
+          const label = document.createElement('label');
+          label.setAttribute('for', checkbox.id);
+          label.textContent = user.name;
+          const brek = document.createElement('br');
+          reviewersSelect.appendChild(checkbox);
+          reviewersSelect.appendChild(label);
+          reviewersSelect.appendChild(brek);
+        }
+        if (user.role === 'Approver') {
+          const option = document.createElement('option');
+          option.value = user.email;
+          option.textContent = user.name;
+          approverSelect.appendChild(option);
+        }
+      });
+    }
+
+
+
+    // Function to log out the user
+    function logout() {
+      alert("You have been logged out due to inactivity.");
+      window.location.href = "/logout"; // Replace "/logout" with your logout URL
+    }
+
+    // Function to reset the logout timer
+    function resetTimer() {
+      clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(logout, 5 * 60 * 1000); // 5 minutes in milliseconds
+    }
+
+    // Event listeners for user activity
+    window.addEventListener("mousemove", resetTimer);
+    window.addEventListener("keydown", resetTimer);
+    window.addEventListener("click", resetTimer);
+
+    // Start the initial logout timer
+    resetTimer();
+
+
+    // Function to log out the user
+    function logout() {
+      alert("You have been logged out due to inactivity.");
+      window.location.href = "/logout"; // Replace "/logout" with your logout URL
+    }
+
+    // Function to reset the logout timer
+    function resetTimer() {
+      clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(logout, 5 * 60 * 1000); // 5 minutes in milliseconds
+    }
+
+    // Event listeners for user activity
+    window.addEventListener("mousemove", resetTimer);
+    window.addEventListener("keydown", resetTimer);
+    window.addEventListener("click", resetTimer);
+
+    // Start the initial logout timer
+    resetTimer();
+
+
+
+    // Toggle Select All Reviewers checkbox
+    function toggleAllReviewers() {
+      const selectAllCheckbox = document.getElementById('select-all');
+      const reviewerCheckboxes = document.querySelectorAll('#reviewers-checkboxes input[type="checkbox"]:not(#select-all)');
+      reviewerCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+    }
+
+    // Document Upload Form Submission (Track document, reviewers, and approvers)
+    document.getElementById('upload-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const documentFile = document.getElementById('document-file').files[0];
+      const reviewerEmails = Array.from(document.querySelectorAll('#reviewers-checkboxes input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.value);
+      const approverEmail = document.getElementById('approver').value;
+
+
+      const allEmails = reviewerEmails.concat(approverEmail);
+      const uniqueEmails = new Set(allEmails);
+      if (uniqueEmails.size !== allEmails.length) {
+        alert('Error: Duplicate emails are not allowed within the same document.');
+        return;
+      }
+
+      const reviewers = users.filter(user => reviewerEmails.includes(user.email)) || "gantasai007@gmail.com";
+      const approver = users.find(user => user.email === approverEmail);
+
+      if (!approver) {
+        alert('Error: Approver not found.');
+        return;
+      }
+      const queryString = window.location.search;
+      const email = queryString.startsWith('?') ? decodeURIComponent(queryString.slice(1).split('=')[0]) : null;
+      console.log(email);
+
+      const formData = [];
+      formData.unshift('status', "pending");
+      formData.unshift('approver', JSON.stringify(approver));
+      formData.unshift('reviewers', JSON.stringify(reviewers));
+      formData.unshift('file', documentFile);
+      formData.unshift('name', documentFile.name)
+      formData.unshift("user", email)
+      dataArray = formData
+      const jsonObject = {};
+      for (let i = 0; i < dataArray.length; i += 2) {
+        const key = dataArray[i];
+        const value = dataArray[i + 1];
+
+        if (key === 'reviewers') {
+          // Parse the reviewers JSON string and extract emails
+          const reviewers = JSON.parse(value);
+          jsonObject[key] = reviewers.map(reviewer => reviewer.email); // Extract only emails
+        } else {
+          // Parse other fields as needed
+          jsonObject[key] = typeof value === 'string' && value.startsWith('{') ? JSON.parse(value) : value;
+        }
+      }
+      const row = document.createElement('tr');
+      console.log(jsonObject);
+      row.innerHTML = `
+        <td>${documentFile.name}</td>
+        <td>${reviewers.map(r => r.name).join(', ')}</td>
+        <td>${approver.name}</td>
+        <td>${"pending"}</td>
+        <td>
+          <form id="resend">
+          <input type="file" id="newFile" required><br>
+          <button onclick="Resend()">resend</button>
+          <form>
+          </td>
+      `;
+      console.log(JSON.stringify(jsonObject));
+
+      async function sendDocumentDetailsToBackend(jsonObject) {
+        await fetch('/routes/documents/upload', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(jsonObject), // Example data
+        })
+          .then((response) => {
+            console.log('Response Status:', response.status); // Logs HTTP status code
+            return response.json();
+          })
+          .then((data) => {
+            console.log('Server Response:', data); // Logs server response
+          })
+          .catch((error) => {
+            console.error('Error connecting to the server:', error);
+          });
+      };
+
+      const app = {};
+
+      document.getElementById('document-tracking').appendChild(row);
+      // Call the function to send data to the backend
+      // sendDocumentDetailsToBackend(jsonObject);
+
+      users.forEach(user => {
+        sendUserDetailsToBackend(user);
+      });
+
+
+    });
+    // Send emails to reviewers and approver via backend
+    async function sendEmailsToReviewersAndApprover(reviewers, approver) {
+      const emailData = { reviewers, approver };
+
+      await fetch('/routes/notifications/send', { // Fixed the path
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailData),
+      })
+        .then(response => response.json())
+        .then(data => console.log('Emails sent successfully:', data))
+        .catch(error => console.error('Error sending emails:', error));
+    }
+
+
+
+    async function fetchTrackingData() {
+      const response = await fetch('/routes/documents/tracking');
+      const data = await response.json();
+      // Populate the tracking table with data
+    }
+
+    // async function sendUserDetailsToBackend(users) {
+    //   try {
+    //     const response = await fetch('/routes/users/add', {
+    //       method: 'POST',
+    //       headers: { 'Content-Type': 'application/json' },
+    //       body: JSON.stringify(users),
+    //     });
+    //     const data = await response.json();
+    //     console.log('User added:', data);
+    //   } catch (error) {
+    //     console.error('Error adding user:', error);
+    //   }
+    // }
+
+    async function saveToDB(user) {
+      const response = await fetch('./addDataToDb', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user),
+      });
+      console.log(response);
+      response.forEach(element => {
+        addUserRow(element);
+      });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      // Log the response from the backend
+      const responseData = await response.json();
+      console.log('Server Response:', responseData);
+    }
+
+
+    //adding document details to the server
+    async function display() {
+
+      const data = await fetch('/routes/documents/tracking', {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!data.ok) {
+        console.error('Error fetching documents:', data.statusText);
+        return;
+      }
+      const queryString = window.location.search;
+      const email = queryString.startsWith('?') ? decodeURIComponent(queryString.slice(1).split('=')[0]) : null;
+
+      const jsonResponse = await data.json();
+      console.log(jsonResponse);
+      jsonResponse.forEach((details) => {
+        const name = (details.name);
+        if (details.user === email) {
+          let html = "";
+          details.reviewers.forEach(ele => {
+            html += `<li>${ele} <button id="removeBtn" onclick=remove("${ele}","${name}")>❌</button></li> `
+          })
+
+
+          const row = document.createElement('tr');
+          // console.log(jsonObject);
+          row.innerHTML = `
+        <td>${details.name}</td>
+        <td>${(details.createdAt).toString().slice(0, 10)}</td>
+        <td style="text-align: left;padding-left: 20px"><ul>${html}<li><form id="addingReviewerForm"><input type='email' id="addingReviewer" placehoder='Enter email' required><button type='submit' id="addBtn" fdprocessedid="mwe7g6" onclick="addReviewers('${details.name}')">add</button></form></li></ul></td>
+        <td>${details.approver}</td>
+        <td>${details.status}</td>
+       <td>
+  <form id="resend" onsubmit="Resend('${details._id}'); return false;">
+    <input type="file" id="newFile" required><br>
+    <button type="submit" style="padding:5px;background-color:#004aad;color:#fff;border:none;border-radius:5px;cursor:pointer;margin-top:5px">
+      Resend
+    </button>
+  </form>
+</td>
+
+      `;
+          document.getElementById('document-tracking').appendChild(row);
+        }
+      })
+    }
+
+
+    async function Resend(_id) {
+      event.preventDefault(); // Prevent page reload
+
+      const fileInput = document.getElementById("newFile");
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("Please select a file before resending.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("fileName", file.name); // Append the file name
+
+      try {
+        const response = await fetch(`/routes/documents/resend/${_id}`, {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to resend the document");
+        }
+
+        const data = await response.json();
+        console.log("Document resent successfully:", data);
+        alert(`Document "${file.name}" resent successfully!`);
+      } catch (error) {
+        console.error("Error:", error.message);
+        alert("Error resending the document. Please try again.");
+      }
+
+      document.getElementById('document-tracking').innerHTML = "";
+      display()
+    }
+
+
+    async function remove(email, name) {
+      const response = await fetch(`/deleteUserFromFile`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, name })
+      });
+      const data = await response.json();
+
+      console.log(data);
+      alert("removed Succesful");
+      document.getElementById('document-tracking').innerHTML = "";
+      display();
+    }
+
+    display();
+
+    async function deleteDocument(id) {
+      console.log(id);
+      const response = await fetch(`/routes/documents/delete/${id}`, {
+        method: 'DELETE',
+      });
+      const data = await response.json();
+      console.log(data);
+      alert("deleted Succesful");
+      document.getElementById('document-tracking').innerHTML = "";
+      display();
+    }
+
+    async function addReviewers(name) {
+      event.preventDefault();
+      const email = document.getElementById("addingReviewer").value;
+      if (email.length == 0) {
+        alert("Please enter email");
+        return
+      }
+      console.log(email);
+      const response = await fetch(`/addReviewersDocument`, {
+        method: "PUT",
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, name })
+      });
+      const data = await response.json();
+      if (data.message === "User not found") {
+        alert("user not found");
+        document.getElementById("addingReviewer").value = "";
+        return;
+      }
+      else if (data.message === "User already added") {
+        alert("user already Present");
+        document.getElementById("addingReviewer").value = "";
+        return;
+      }
+      document.getElementById('document-tracking').innerHTML = "";
+      display();
+    }
+
+
+  </script>
+</body>
+
+</html>

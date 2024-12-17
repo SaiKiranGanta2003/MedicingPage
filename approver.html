@@ -1,0 +1,483 @@
+<!-- <!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approver Page - Medicing Enterprises</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+    }
+    header, footer {
+      background-color: #004aad;
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    header .logo img {
+      height: 50px;
+      margin-right: 10px;
+    }
+    header .search-bar input {
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      margin-right: 5px;
+    }
+    .container {
+      max-width: 1000px;
+      margin-top: 20px;
+    }
+    .form-group label {
+      font-weight: bold;
+    }
+    .form-group select, .form-group input, .form-group textarea {
+      width: 100%;
+    }
+    .btn-submit, .btn-reset {
+      margin-top: 10px;
+    }
+    .status-section {
+      margin-top: 20px;
+    }
+    .comment-section {
+      margin-top: 20px;
+    }
+    .signature-section {
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+
+
+    <header>
+      <h2>Medicing Enterprises - Approver Page</h2>
+      <hr>
+    </header>
+    <div class="container">
+
+    <h3>Documents Assigned to You</h3>
+    <div id="documentList"></div>
+    <div id="successMessage" style="display: none;">
+      <p class="alert alert-success">Document approved successfully!</p>
+      <p class="alert alert-success">Document approved successfully!</p> 
+    </div>
+    <ul>
+      <li>hello</li>
+    </ul>
+  </div>
+
+  <footer class="mt-5" style="position:relative;bottom: 0;width: 100%;">
+    <p>© 2024 Medicing Enterprises</p>
+  </footer>
+  <script>
+    
+// Function to populate the document list dynamically from the backend
+// Fetch the document list from the backend
+async function fetchDocumentList() {
+  try {
+    const response = await fetch('./routes/documents'); // Make GET request to the backend route
+    if (!response.ok) {
+      throw new Error('Error fetching documents');
+    }
+
+    const data = await response.json();
+    const documents = data.documentTracking;  // Assuming the response contains an array of documents in documentTracking
+    populateDocumentList(documents);
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// we have to add the document from mongo db. mongodb database name is test and the collection name is documentData
+//we have to add the document from mongo db
+// Function to populate the document list dynamically from the backend
+document.addEventListener('DOMContentLoaded', fetchDocumentList);
+
+fetchDocumentList();
+
+
+
+
+// Populate the document list on the page
+function populateDocumentList(documents) {
+  const documentList = document.getElementById('documentList');
+  documentList.innerHTML = ''; // Clear any existing content
+
+  documents.forEach(doc => {
+    const docRow = document.createElement('div');
+    docRow.classList.add('card', 'mb-3');
+    docRow.innerHTML = `
+      <div class="card-body">
+        <h5 class="card-title">${doc.title} - Status: ${doc.status}</h5>
+        <h6>Reviewers: ${doc.reviewers.map(reviewer => reviewer.email).join(', ')}</h6>
+        <h6>Approver: ${doc.approver.email}</h6>
+        <div class="comment-section">
+          <h6>Comments:</h6>
+          ${doc.comments.length > 0 ? doc.comments.map(comment => `
+            <p>${comment.comment}</p>
+          `).join('') : '<p>No comments yet.</p>'}
+        </div>
+
+        <div class="signature-section">
+          <h6>Approver Signature:</h6>
+          <input type="text" id="signatureInput-${doc._id}" class="form-control" placeholder="Enter your signature">
+        </div>
+
+        <div class="status-section">
+          <button class="btn btn-success" onclick="approveDocument('${doc._id}')" ${doc.status === 'Approved' || doc.status === 'Rejected' ? 'disabled' : ''}>Approve</button>
+          <button class="btn btn-danger" onclick="rejectDocument('${doc._id}')" ${doc.status === 'Approved' || doc.status === 'Rejected' ? 'disabled' : ''}>Reject</button>
+        </div>
+      </div>
+    `;
+    documentList.appendChild(docRow);
+  });
+}
+
+// Approve Document
+async function approveDocument(docId) {
+  const signature = document.getElementById(`signatureInput-${docId}`).value;
+  if (!signature) {
+    alert('Please provide a signature.');
+    return;
+  }
+
+  try {
+    const response = await fetch('./routes/document/update-status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        documentId: docId,
+        status: 'Approved',
+        signature,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error approving the document');
+    }
+
+    const data = await response.json();
+    alert('Document Approved with Signature');
+    fetchDocumentList(); // Re-fetch the document list to update statuses
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Reject Document
+async function rejectDocument(docId) {
+  const signature = document.getElementById(`signatureInput-${docId}`).value;
+  if (!signature) {
+    alert('Please provide a signature.');
+    return;
+  }
+
+  try {
+    const response = await fetch('./routes/document/update-status', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        documentId: docId,
+        status: 'Rejected',
+        signature,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Error rejecting the document');
+    }
+
+    const data = await response.json();
+    alert('Document Rejected with Signature');
+    fetchDocumentList(); // Re-fetch the document list to update statuses
+  } catch (error) {
+    console.error('Error:', error);
+  }
+}
+
+// Initialize the page and fetch the documents
+fetchDocumentList();
+
+
+  </script>
+
+</body>
+</html> -->
+
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Approver Page - Medicing Enterprises</title>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+    }
+
+    header,
+    footer {
+      background-color: #004aad;
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header .logo img {
+      height: 50px;
+      margin-right: 10px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      border-radius: 5px;
+      border: 0.5px solid black;
+      outline: none;
+    }
+
+    #document-tracking {
+      width: 100%;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h2>Medicing Enterprises - Approver Page</h2>
+  </header>
+
+  <div class="mainContainer">
+    <div class="container">
+      <h3>DashBoard</h3>
+      <span id="Upload"></span>
+      <table class="table table-striped" id="document-tracking">
+        <thead style="background-color: #004aad; color: #fff;height: 30px;">
+          <tr>
+            <th>Document Name</th>
+
+            <th>Status</th>
+            <th>Review</th>
+            <th>Signed</th>
+            <th>Approved/Rejected</th>
+          </tr>
+        </thead>
+        <tbody id="RowsAdding">
+          <!-- Dynamic rows will be added here -->
+        </tbody>
+      </table>
+
+    </div>
+  </div>
+
+  <footer class="mt-5" style="position:relative;bottom: 0;width: 100%;">
+    <p>&copy; 2024 Medicing Enterprises</p>
+  </footer>
+
+  <script>
+    const queryString = window.location.search;
+    const email = queryString.startsWith('?') ? decodeURIComponent(queryString.slice(1).split('=')[0]) : null;
+    console.log(email);
+
+    async function reject(name) {
+      const queryString = window.location.search;
+      const email = queryString.startsWith('?') ? decodeURIComponent(queryString.slice(1).split('=')[0]) : null;
+
+      await fetch("/routes/documents/Rejected", {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email, Docname: name }), // Example data
+      })
+        .then((response) => {
+          console.log('Response Status:', response.status); // Logs HTTP status code
+          return response.json();
+        })
+        .then((data) => {
+          console.log('Server Response:', data); // Logs server response
+        })
+        .catch((error) => {
+          console.error('Error connecting to the server:', error);
+        });
+
+      alert(`Document Rejected : ${name}`);
+    };
+
+    let logoutTimer;
+
+    // Function to log out the user
+    function logout() {
+      alert("You have been logged out due to inactivity.");
+      window.location.href = "/index.html"; // Replace "/logout" with your logout URL
+    }
+
+    // Function to reset the logout timer
+    function resetTimer() {
+      clearTimeout(logoutTimer);
+      logoutTimer = setTimeout(logout, 5 * 60 * 1000); // 5 minutes in milliseconds
+    }
+
+    // Event listeners for user activity
+    window.addEventListener("mousemove", resetTimer);
+    window.addEventListener("keydown", resetTimer);
+    window.addEventListener("click", resetTimer);
+
+    // Start the initial logout timer
+    resetTimer();
+
+
+    async function Approve(name) {
+      const queryString = window.location.search;
+      const email = queryString.startsWith('?') ? decodeURIComponent(queryString.slice(1).split('=')[0]) : null;
+
+      await fetch("/routes/documents/approved", {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email: email, Docname: name }), // Example data
+      })
+        .then((response) => {
+          console.log('Response Status:', response.status); // Logs HTTP status code
+          return response.json();
+        })
+        .then((data) => {
+          console.log('Server Response:', data); // Logs server response
+        })
+        .catch((error) => {
+          console.error('Error connecting to the server:', error);
+        });
+
+      alert(`Document Approved : ${name}`);
+    };
+
+    async function findUser(email) {
+      const response = await fetch("/searchUser", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email }),
+      });
+      const data = await response.json();
+      if (data.length > 0) {
+        if ((data[0].role).includes("User")) {
+          document.getElementById('Upload').innerHTML = `
+          <button class='btn btn-primary mb-3' onclick='gotoUser("${email}")'>Upload Document</button>`
+        }
+      }
+    }
+    findUser(email);
+
+    async function gotoUser(mail) {
+      try {
+        // Convert the mail object to query parameters
+        const params = new URLSearchParams(mail).toString();
+
+        // Send the GET request with query parameters
+        const response = await fetch(`/reviewer?${params}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json(); // Parse the response
+        console.log(data); // Process the response
+
+        // Redirect to the reviewer page if needed
+        window.location.href = `/userPage.html?${params}`;
+      } catch (error) {
+        console.error('Error:', error); // Handle errors
+      }
+    }
+
+    async function fetchDocumentList() {
+      const res = await fetch("/routes/showDocuments", {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then(res => res.json())
+        .then((data) => {
+          data.forEach(element => {
+            if ((email === element.approver || (element.reviewers).includes(email)) && element.status === "pending") {
+              if (email === element.approver) {
+                console.log(" i am block")
+                html = `
+                  <td>${element.name}</td>
+                  <td> ${element.status}</td>
+                  <td><button class="btn btn-primary" onclick="review('${element.name}')">Review</button></td>
+                  <td><button class="btn btn-primary" onclick="sign('${element.name}')" disabled>Signed</button></td>
+                  <td>
+                  <button class="btn btn-success" onclick="Approve('${element.name}')">approved</button>
+                  <button class="btn btn-danger" onclick="reject('${element.name}')">Reject</button>
+                  </td>
+              `
+                document.getElementById("RowsAdding").innerHTML += html;
+              }
+              else {
+
+                html = `
+                  <td>${element.name}</td>
+                  <td> ${element.status}</td>
+                  <td><button class="btn btn-primary" onclick="review('${element.name}')">Review</button></td>
+                  <td><button class="btn btn-primary" onclick="sign('${element.name}')" disabled>Signed</button></td>
+                  <td> - </td>
+              `
+                document.getElementById("RowsAdding").innerHTML += html;
+              }
+            }
+
+          });
+        })
+    }
+    fetchDocumentList();
+
+
+    async function review(documentName) {
+      try {
+        const queryString = window.location.search;
+        const email = queryString.startsWith('?') ? decodeURIComponent(queryString.slice(1).split('=')[0]) : null;
+        window.location.href = `reviewerPageOpen.html?documentName=${encodeURIComponent(documentName)}&email=${encodeURIComponent(email)}`;
+      } catch (error) {
+        console.error('Error navigating to reviewer page:', error);
+      }
+    }
+  </script>
+</body>
+
+</html>

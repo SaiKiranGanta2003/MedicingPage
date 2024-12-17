@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        header {
+            background-color: #004aad;
+            color: #fff;
+            padding: 15px 20px;
+            width: 100%;
+        }
+
+        footer {
+            background-color: #004aad;
+            color: #fff;
+            padding: 15px 20px;
+            width: 100%;
+        }
+
+        .container {
+            max-width: 1200px;
+            border: 1px solid #ccc;
+            padding: 20px;
+            border-radius: 20px;
+            margin: 20px auto;
+            align-items: center;
+        }
+
+        .block {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #documentList {
+            width: 70%;
+            height: 90vh;
+            border: 2px solid black;
+            padding: 10px;
+        }
+
+        #commentsSection {
+            width: 30%;
+            padding: 10px 0px;
+            border: 2px solid black;
+            height: 90vh;
+            border-left: none;
+        }
+
+        #btn {
+            width: 40%;
+            border-radius: 10px;
+            padding: 7px;
+            outline: 0;
+            padding: 5px 10px;
+            border: 0;
+            background-color: #004aad;
+            color: white;
+            margin-right: 20px;
+            transition: 0.1s ease-in;
+        }
+
+        #noComBtn {
+            width: 40%;
+            border-radius: 10px;
+            padding: 7px;
+            outline: 0;
+            padding: 5px 10px;
+            border: 0;
+            background-color: #004aad;
+            color: white;
+            margin-left: 20px;
+            transition: 0.1s ease-in;
+
+        }
+
+        .btndiv {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        #btn:hover,
+        #noComBtn:hover {
+            cursor: pointer;
+            background-color: #0b5fce;
+            font-size: 1.005rem;
+            padding: 3px;
+            border: 1px solid black;
+        }
+
+        #textarea1 {
+            width: 100%;
+            border-radius: 10px;
+            padding: 5px;
+            outline: 0;
+            padding: 10px;
+            margin-bottom: 2px;
+        }
+
+        @media (max-width: 768px) {
+            .btndiv {
+                justify-content: flex-start;
+            }
+
+            .block {
+                flex-direction: column;
+            }
+
+            #documentList {
+                width: 100%;
+                border-bottom: 0px;
+            }
+
+            #commentsSection {
+                width: 100%;
+                border-left: 2px solid black;
+            }
+
+            .btndiv {
+                width: 100%;
+                justify-content: space-between;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Medicing Enterprises - Review Page</h1>
+    </header>
+    <div class="container">
+
+        <h2>Review Page</h2>
+        <p style="margin-bottom: 30px;">DocumentName:"<!-- Dynamic email here -->"</p>
+        <div class="block">
+            <div id="documentList">
+                <h3 style="padding: 10px;">Documnent</h3>
+                <iframe height="90%" width="100%" src="chrome-extension://efaidnbmnnnibpcajpcglclefindmkaj/https://www.adobe.com/support/products/enterprise/knowledgecenter/media/c4611_sample_explain.pdf" style="align-self: center;"></iframe>
+            </div>
+            <div id="commentsSection">
+                <h3 style="padding: 10px;height: 10%;">Comments</h3>
+                <div id="comments"
+                    style="height: 68%;background-color: white;width: 100%;text-wrap: wrap;overflow-y: scroll;">
+                    <ul id="commentList" style="padding-left: 30px;"></ul>
+                </div>
+                <textarea id="textarea1" rows="4" cols="50"></textarea>
+                <div class="btndiv">
+                    <button id='noComBtn' onclick="NoComments()">No Comments</button>
+                    <button id="btn" onclick="submitComments()">Send Comment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 Medicing Enterprises. All rights reserved.</p>
+    </footer>
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const documentName = urlParams.get('documentName');
+        const email = urlParams.get('email');
+
+        const list = document.getElementById('list');
+        async function submitComments() {
+            try {
+                // Fetch user details
+                const res = await fetch("/getUserDetails", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email }),
+                });
+
+                if (!res.ok) {
+                    throw new Error('Failed to fetch user details');
+                }
+
+                const details = await res.json();
+                console.log(details);
+                const name = details.name;
+                const comment = document.getElementById('textarea1').value;
+
+                if (comment === '') {
+                    alert('Please enter a comment');
+                    return;
+                }
+
+                // Append the comment to the list
+                const list = document.getElementById('commentList'); // Ensure you have the list element in the HTML
+                const li = `<li><strong>${name}</strong>: ${comment}</li>`;
+                list.innerHTML += li;
+                const urlParams = new URLSearchParams(window.location.search);
+                const documentName = urlParams.get('documentName');
+
+                console.log(name, comment);
+
+                // Submit the comment to the server
+                const commentRes = await fetch("/addComment", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        documentName: documentName,
+                        comments: [{ name: name, comment: comment }] // Send as an array of objects
+                    }),
+                });
+
+                if (!commentRes.ok) {
+                    throw new Error('Failed to submit comments');
+                }
+
+                // Clear the textarea after submitting
+                document.getElementById('textarea1').value = '';
+
+            } catch (error) {
+                console.error('Error in submitComments:', error);
+            }
+        }
+
+        async function fetchComments() {
+            console.log("fetching comments");
+            try {
+                const res = await fetch("/getComments", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ documentName: documentName }),
+                });
+
+                if (!res.ok) {
+                    throw new Error('Failed to fetch comments');
+                }
+                const comments = await res.json();
+                // console.log(comments);
+                const list = document.getElementById('commentList');
+                list.innerHTML = '';
+                comments[0].comments.forEach(comment => {
+                    const li = `<li><strong>${comment.name}</strong>: ${comment.comment}</li>
+                `;
+                    list.innerHTML += li;
+                });
+                const nocommentRes = await fetch("/getNoComments", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        documentName: documentName,
+                    }),
+                });
+                const Nocomments1 = await nocommentRes.json();
+                console.log(Nocomments1[0].noComments);
+                if(Nocomments1[0].noComments.includes(email)){
+                    document.getElementById('noComBtn').disabled = true;
+                    document.getElementById('noComBtn').style.backgroundColor = 'gray';
+                }
+                else{console.log(email+"notmatched")}
+
+                
+
+            } catch (error) {
+                console.error('Error in fetchComments:', error);
+            }
+        };
+        fetchComments();
+
+        async function NoComments() {
+            try {
+                // Fetch user details
+                const res = await fetch("/getUserDetails", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email: email }),
+                });
+
+                if (!res.ok) {
+                    throw new Error('Failed to fetch user details');
+                }
+
+                const details = await res.json();
+                const name = details.name;
+
+                // Append the comment to the list
+                const list = document.getElementById('commentList'); // Ensure you have the list element in the HTML
+                const li = `<li><strong>${name}</strong>: No comments</li>`;
+                list.innerHTML += li;
+                const urlParams = new URLSearchParams(window.location.search);
+                const documentName = urlParams.get('documentName');
+
+                const commentRes1 = await fetch("/addComment", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        documentName: documentName,
+                        comments: [{ name: name, comment: "No Comments" }] // Send as an array of objects
+                    }),
+                });
+
+
+
+                // Submit the comment to the server
+                const commentRes = await fetch("/addNoComments", {
+                    method: "PUT",
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        documentName,
+                       email
+                    }),
+                });
+
+                if (!commentRes.ok) {
+                    throw new Error('Failed to submit comments');
+                }
+
+                // Clear the textarea after submitting
+                document.getElementById('textarea1').value = '';
+                document.getElementById('noComBtn').disabled = true;
+                document.getElementById('noComBtn').style.backgroundColor = 'gray';
+
+            } catch (error) {
+                console.error('Error in submitComments:', error);
+            }
+        }
+
+
+
+    </script>
+</body>
+
+</html>

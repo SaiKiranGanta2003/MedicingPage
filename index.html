@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login Page</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+  <style>
+    /* body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }*/
+
+    header,
+    footer {
+      /* background-color: #004aad; */
+      background-color: #0d6efd;
+      color: white;
+      padding: 15px 20px;
+      text-align: center;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+
+    /*
+    header .search-bar input {
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      margin-right: 5px;
+    }
+    footer {
+      text-align: center;
+      font-size: 14px;
+    }
+
+    footer a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Login Container */
+    .login-container {
+      max-width: 400px;
+      margin: 50px auto;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      border-radius: 8px;
+      /* text-align: center; */
+    }
+
+    .login-container h1 {
+      margin-bottom: 20px;
+    }
+
+    .login-container form {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .login-container input {
+      margin-bottom: 15px;
+      padding: 5px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    /* .login-container button {
+      padding: 10px;
+      background-color: #004aad;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    } */
+    .button-container {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+    }
+
+    /* .login-container button:hover {
+      background-color: #003680;
+    } */
+
+    .button-container button {
+      background-color: transparent;
+      border: none;
+      outline: none;
+      margin-top: 20px;
+      color: black;
+    }
+
+    .button-container button:hover {
+      color: #004aad;
+      background-color: transparent;
+    }
+
+    .form-label {
+      text-align: left;
+    }
+  </style>
+</head>
+
+<body>
+  <header class="main-header bg-primary">
+
+    <h1>Medicing Enterprises</h1>
+  </header>
+  <main class="container">
+    <div class="login-container">
+      <h2 style="text-align: center;">Login</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="username" class="form-label">Username:</label>
+          <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+        <div class="form-group">
+          <label for="password" class="form-label">Password:</label>
+          <input type="password" class="form-control" id="password" name="password" required>
+        </div>
+        <button type="submit" class="btn btn-primary">Login</button>
+
+        <div class="button-container">
+          <button type="button" id="registerButton">Create Password</button>
+          <button type="button" id="forgotPasswordButton">Forgot Password</button>
+      </form>
+    </div>
+  </main>
+  <footer class="main-footer" class="bg-primary">
+    <p class="bg-primary">&copy; <span id="year"></span> Medicing Enterprises. All rights reserved.</p>
+  </footer>
+
+  <script>
+
+    // Get the current year and display it in the footer
+    document.getElementById("registerButton").addEventListener("click", function () {
+      window.location.href = './reigeister.html';
+    })
+
+
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    document.getElementById('loginForm').addEventListener('submit',
+      async function (event) {
+        event.preventDefault();
+
+        const email = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        // console.log("i am line number 133:", email, password);
+        if (email === 'admin' && password === 'Admin123') {
+          console.log("i am line number 159:", email, password);
+          window.location.href = 'adminPage.html';
+        } else {
+          console.log("i am line number 162:", email, password);
+
+          // Make an API call to validate the reviewer or approver credentials
+          const response = await fetch('/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ email: email, password: password })
+          })
+            .then(response => response.json())
+            .then(data => {
+              console.log(data);
+              if (data.user.email === email) {
+                if(data.user.status === "Active"){
+                  console.log(data.user.email);
+                  gotoApprover(data.user.email);
+                }
+                else{
+                  alert('Your account is De-Active now');
+                }
+                
+              } else {
+                console.log(data.user.email);
+                alert('Invalid credentials!');
+              }
+            })
+            .catch(error => {
+              console.error('Error:', error);
+              alert('Login failed! Please try again.');
+            });
+        }
+      });
+
+
+    // Convert the mail object to query parameters
+    async function gotoreviewer(mail) {
+      try {
+        // Convert the mail object to query parameters
+        const params = new URLSearchParams(mail).toString();
+
+        // Send the GET request with query parameters
+        const response = await fetch(`/reviewer?${params}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json(); // Parse the response
+        console.log(data); // Process the response
+
+        // Redirect to the reviewer page if needed
+        window.location.href = `/reviewer.html?${params}`;
+      } catch (error) {
+        console.error('Error:', error); // Handle errors
+      }
+    }
+
+    async function gotoApprover(mail) {
+      try {
+        // Convert the mail object to query parameters
+        const params = new URLSearchParams(mail).toString();
+
+        // Send the GET request with query parameters
+        const response = await fetch(`/approver?${params}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json(); // Parse the response
+        console.log(data); // Process the response
+
+        // Redirect to the reviewer page if needed
+        window.location.href = `/approver.html?${params}`;
+      } catch (error) {
+        console.error('Error:', error); // Handle errors
+      }
+    }
+
+
+    async function gotoUser(mail) {
+      try {
+        // Convert the mail object to query parameters
+        const params = new URLSearchParams(mail).toString();
+
+        // Send the GET request with query parameters
+        const response = await fetch(`/reviewer?${params}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+
+        const data = await response.json(); // Parse the response
+        console.log(data); // Process the response
+
+        // Redirect to the reviewer page if needed
+        window.location.href = `/userPage.html?${params}`;
+      } catch (error) {
+        console.error('Error:', error); // Handle errors
+      }
+    }
+
+    document.getElementById('forgotPasswordButton').addEventListener('click', function () {
+      window.location.href = `/forgetPassword.html`;
+    });
+
+
+
+
+  </script>
+</body>
+
+</html>

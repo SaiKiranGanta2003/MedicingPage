@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Signature Page</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #f4f4f9;
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            background: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        .options {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        #signature-canvas {
+            border: 1px solid #ccc;
+            width: 100%;
+            height: 200px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Digital Signature</h1>
+        <div class="options">
+            <button id="text-signature">Text Signature</button>
+            <button id="image-signature">Image Signature</button>
+            <button id="freehand-signature">Freehand Signature</button>
+            <button id="digital-signature" class="hidden">Digital Signature</button>
+        </div>
+        <div id="signature-area">
+            <canvas id="signature-canvas" class="hidden"></canvas>
+            <input type="text" id="text-input" class="hidden" placeholder="Type your signature here">
+            <input type="file" id="image-input" class="hidden" accept="image/*">
+        </div>
+        <button id="save-signature">Save Signature</button>
+        <p id="signature-status" style="text-align: center; margin-top: 10px; color: green;"></p>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('signature-canvas');
+        const ctx = canvas.getContext('2d');
+        const textInput = document.getElementById('text-input');
+        const imageInput = document.getElementById('image-input');
+        const digitalButton = document.getElementById('digital-signature');
+        const signatureStatus = document.getElementById('signature-status');
+
+        let isDrawing = false;
+        let storedSignature = localStorage.getItem('signature');
+
+        // Check local storage for a stored signature
+        if (storedSignature) {
+            digitalButton.classList.remove('hidden');
+            signatureStatus.textContent = 'A digital signature is already saved.';
+        }
+
+        // Button listeners
+        document.getElementById('text-signature').addEventListener('click', () => {
+            resetSignatureArea();
+            textInput.classList.remove('hidden');
+        });
+
+        document.getElementById('image-signature').addEventListener('click', () => {
+            resetSignatureArea();
+            imageInput.classList.remove('hidden');
+        });
+
+        document.getElementById('freehand-signature').addEventListener('click', () => {
+            resetSignatureArea();
+            canvas.classList.remove('hidden');
+            canvas.addEventListener('mousedown', startDrawing);
+            canvas.addEventListener('mouseup', stopDrawing);
+            canvas.addEventListener('mousemove', draw);
+        });
+
+        document.getElementById('digital-signature').addEventListener('click', () => {
+            resetSignatureArea();
+            signatureStatus.textContent = 'Your digital signature is already saved.';
+        });
+
+        document.getElementById('save-signature').addEventListener('click', () => {
+            let signature;
+            if (!canvas.classList.contains('hidden')) {
+                signature = canvas.toDataURL();
+            } else if (!textInput.classList.contains('hidden')) {
+                signature = textInput.value;
+            } else if (!imageInput.classList.contains('hidden') && imageInput.files[0]) {
+                const reader = new FileReader();
+                reader.onload = () => {
+                    localStorage.setItem('signature', reader.result);
+                    signatureStatus.textContent = 'Signature saved successfully!';
+                };
+                reader.readAsDataURL(imageInput.files[0]);
+                return;
+            }
+
+            if (signature) {
+                localStorage.setItem('signature', signature);
+                signatureStatus.textContent = 'Signature saved successfully!';
+            } else {
+                alert('Please select or create a signature first.');
+            }
+        });
+
+        function startDrawing(e) {
+            isDrawing = true;
+            ctx.beginPath();
+            ctx.moveTo(e.offsetX, e.offsetY);
+        }
+
+        function stopDrawing() {
+            isDrawing = false;
+        }
+
+        function draw(e) {
+            if (!isDrawing) return;
+            ctx.lineTo(e.offsetX, e.offsetY);
+            ctx.stroke();
+        }
+
+        function resetSignatureArea() {
+            canvas.classList.add('hidden');
+            textInput.classList.add('hidden');
+            imageInput.classList.add('hidden');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            textInput.value = '';
+            imageInput.value = '';
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Approver Page</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .container {
+            border: 2px solid #004aad;
+            min-width: 1000px;
+            display: flex;
+            /* align-items: center; */
+            /* background-color: brown; */
+            justify-content: center;
+            flex-direction: column;
+            padding: 40px 30px;
+        }
+
+        header {
+            background-color: #004aad;
+            width: 100%;
+            position: relative;
+            top: 0;
+            padding: 10px;
+            color: white;
+        }
+
+        .mainContainer {
+            /* max-width: 1000px; */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            /* background-color: aqua; */
+            padding: 40px 30px;
+
+        }
+
+        #document-tracking {
+            width: 100%;
+        }
+
+        footer {
+            background-color: #004aad;
+            width: 100%;
+            padding: 20px;
+            position: relative;
+            bottom: 0;
+            color: white;
+        }
+
+        .action {
+            display: flex;
+            align-items: center;
+            justify-content: space-evenly;
+        }
+
+        .approveBtn {
+            background-color: rgb(44, 229, 44);
+            border: 0;
+            outline: 0;
+            color: rgb(0, 0, 0);
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .rejectBtn {
+            background-color: rgb(222, 25, 8);
+            border: 0;
+            outline: 0;
+            color: rgb(255, 255, 255);
+            cursor: pointer;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .rows-are-added {
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Medicing Enterprises - Approver Page</h1>
+    </header>
+    <div class="mainContainer">
+        <div class="container">
+            <h3 style="margin-bottom: 30px;">Documents for Approver</h3>
+            <table class="" id="document-tracking">
+                <thead style="background-color: #004aad; color: #fff;height: 30px;">
+                    <tr>
+                        <th>Name</th>
+                        <th>Reviewers</th>
+                        <th>Comments</th>
+                        <th>Signature</th>
+                        <th>Status</th>
+                        <th>Review</th>
+                        <th>Signed</th>
+                        <th>Approved/Rejected</th>
+                    </tr>
+                </thead>
+                <tbody id="RowsAdding">
+                    <!-- Dynamic rows will be added here -->
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <footer>
+        <p>&copy; 2024 Medicing Enterprises. All rights reserved.</p>
+    </footer>
+    <script>
+        const rows = [
+            { id: 1, name: "Kiran", Reviwers: "sai,ganta", comments: "i have the document comment", signature: "1 persons signed", status: "pending", review: "yes", signed: "No" },
+            { id: 2, name: "Kiran1", Reviwers: "sai1,ganta1", comments: "i have the document comment1", signature: "2 persons signed", status: "pending", review: "yes", signed: "No" },
+            { id: 3, name: "Kiran2", Reviwers: "sai2,ganta2", comments: "", signature: "4 persons signed", status: "pending", review: "yes", signed: "yes" },
+            { id: 4, name: "Kiran3", Reviwers: "sai3,ganta3", comments: "", signature: "4 persons signed", status: "pending", review: "yes", signed: "yes" },
+        ]
+
+        displayData();
+        function displayData() {
+            let data = "";
+            rows.forEach((element) => {
+                if (element.status == "pending") {
+                    data += `
+            <tr id="row${element.id}" class="rows-are-added">
+            <td>${element.name}</td>
+            <td>${element.Reviwers}</td>
+            <td>${element.comments}</td>
+            <td>${element.signature}</td>
+            <td id="status${element.id}">${element.status}</td>
+            <td>${element.review}</td>
+            <td>${element.signed}</td>
+            <td class="action">
+                <button class="approveBtn"  id="approveBtn${element.id}" onclick="approved(${element.id})">Approve</button>
+                <button class="rejectBtn" id="rejectBtn${element.id}"  onclick="rejected(${element.id})">Reject</button>
+            </td>
+            </tr>
+            `
+                } else{
+                data += `
+            <tr id="row${element.id}" class="rows-are-added">
+            <td>${element.name}</td>
+            <td>${element.Reviwers}</td>
+            <td>${element.comments}</td>
+            <td>${element.signature}</td>
+            <td id="status${element.id}">${element.status}</td>
+            <td>${element.review}</td>
+            <td>${element.signed}</td>
+            <td class="action">
+                <button class="approveBtn" id="approveBtn${element.id}" style="background-color: gray;color:black" onclick="approved(${element.id})" disabled>Approve</button>
+                <button class="rejectBtn" id="rejectBtn${element.id}" style="background-color: gray;color:black" onclick="rejected(${element.id})" disabled>Reject</button>
+            </td>
+            </tr>
+            `}
+            });
+            document.getElementById("RowsAdding").innerHTML += data;
+        };
+
+        function approved(id)
+        {
+            // document.getElementById(`row${id}`).remove();
+            document.getElementById(`approveBtn${id}`).disabled = true;
+            document.getElementById(`approveBtn${id}`).style.backgroundColor="gray";
+            document.getElementById(`approveBtn${id}`).style.color="black";
+            document.getElementById(`rejectBtn${id}`).style.backgroundColor="gray";
+            document.getElementById(`rejectBtn${id}`).style.color="black";
+            document.getElementById(`status${id}`).innerText="Approved";
+            alert("Approved \nYou will be alerted to the admin");
+        }
+        function rejected(id)
+        {
+            document.getElementById(`approveBtn${id}`).disabled = true;
+            document.getElementById(`approveBtn${id}`).style.backgroundColor="gray";
+            document.getElementById(`approveBtn${id}`).style.color="black";
+            document.getElementById(`rejectBtn${id}`).style.backgroundColor="gray";
+            document.getElementById(`rejectBtn${id}`).style.color="black";
+            document.getElementById(`status${id}`).innerText="Rejected";
+            // document.getElementById(`row${id}`).remove();
+            alert("Rejected \nYou will be alerted to the admin");
+
+        }
+    </script>
+
+</body>
+
+</html>

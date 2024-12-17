@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - Medicing Enterprises</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f5f5;
+      color: #333;
+    }
+
+    header,
+    footer {
+      background-color: #004aad;
+      color: #fff;
+      padding: 15px 20px;
+      text-align: center;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header .logo img {
+      height: 50px;
+      margin-right: 10px;
+    }
+
+    header .search-bar input {
+      padding: 8px;
+      border: none;
+      border-radius: 5px;
+      margin-right: 5px;
+    }
+
+    #user-email {
+      width: 100%;
+    }
+
+    header .search-bar button {
+      padding: 8px 12px;
+      background-color: #fff;
+      border: none;
+      color: #004aad;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+
+    header .search-bar button:hover {
+      background-color: #003680;
+    }
+
+    #user-name {
+      width: 100%;
+    }
+
+    footer {
+      text-align: center;
+      font-size: 14px;
+    }
+
+    footer a {
+      color: #fff;
+      text-decoration: none;
+      margin: 0 10px;
+    }
+
+    footer a:hover {
+      text-decoration: underline;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 20px auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      margin-bottom: 20px;
+    }
+
+    .form-section {
+      margin-bottom: 40px;
+    }
+
+    .form-section input,
+    .form-section select {
+      padding: 10px;
+      margin-bottom: 10px;
+      width: 100%;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+
+    .form-section input {
+      width: max-content;
+    }
+
+    .form-section button {
+      padding: 10px;
+      background-color: #004aad;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .form-section button:hover {
+      background-color: #003680;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+
+    table th,
+    table td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: center;
+    }
+
+    table th {
+      background-color: #004aad;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <header>
+    <div class="logo">
+
+      <h1>Medicing Enterprises</h1>
+    </div>
+  </header>
+
+  <!-- Admin Dashboard Content -->
+  <div class="container">
+    <h2>Admin Dashboard</h2>
+
+    <!-- User Management Section -->
+    <div class="form-section">
+      <h3>Manage Users</h3>
+      <form id="user-form">
+        <input type="text" id="user-name" placeholder="Full Name" required>
+        <input type="email" id="user-email" placeholder="Email" required>
+        <select id="user-role" required>
+          <option value="">Select Role</option>
+          <option value="Reviewer">Reviewer</option>
+          <option value="Approver">Approver</option>
+        </select>
+        <button type="submit">Add User</button>
+      </form>
+      <div id="user-list"></div> <!-- Display added users here -->
+    </div>
+
+    <!-- Document Upload Section -->
+    <div class="form-section">
+      <h3>Upload Documents</h3>
+      <form id="upload-form">
+        <input type="file" id="document-file" required>
+        <br>
+        <label for="reviewers">Select Reviewers:</label>
+        <div id="reviewers-checkboxes"></div>
+        <label for="approver">Select Approver:</label>
+        <select id="approver" required></select>
+        <button type="submit">Upload Document</button>
+      </form>
+      <div id="reviewers-info"></div>
+    </div>
+
+    <!-- Document Tracking Section -->
+    <div>
+      <h3>Document Tracking</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>Document</th>
+            <th>Reviewer(s)</th>
+            <th>Approver</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="document-tracking">
+          <!-- Dynamic rows will be added here -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer>
+    <p>&copy; <span id="year"></span> Medicing Enterprises. All rights reserved.</p>
+  </footer>
+
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    const users = [];
+    const documents = [];
+    document.getElementById('user-form').addEventListener('submit', function (e) {
+      e.preventDefault();
+      const userName = document.getElementById('user-name').value;
+      const userEmail = document.getElementById('user-email').value;
+      const userRole = document.getElementById('user-role').value;
+
+      // Check if email already exists
+      if (users.some(user => user.email === userEmail)) {
+        alert('Error: This email is already in use.');
+        return;
+      }
+
+      const newUser = { name: userName, email: userEmail, role: userRole };
+      users.push(newUser);
+      displayUsers();
+      alert(`User ${newUser.name} (${newUser.email}) added as ${newUser.role}.`);
+      document.getElementById('user-form').reset();
+    });
+
+    // Function to display users in the Manage Users section
+    function displayUsers() {
+      const userList = document.getElementById('user-list');
+      userList.innerHTML = '';
+      users.forEach(user => {
+        const userDiv = document.createElement('div');
+        userDiv.textContent = `${user.name} (${user.email}) - ${user.role}`;
+        userList.appendChild(userDiv);
+      });
+
+      // Update the reviewer and approver selection options in the Upload Documents section
+      const reviewersSelect = document.getElementById('reviewers-checkboxes');
+      const approverSelect = document.getElementById('approver');
+
+      reviewersSelect.innerHTML = '';
+      approverSelect.innerHTML = '';
+
+      const selectAllCheckbox = document.createElement('input');
+      selectAllCheckbox.type = 'checkbox';
+      selectAllCheckbox.id = 'select-all';
+      selectAllCheckbox.addEventListener('change', toggleAllReviewers);
+      const selectAllLabel = document.createElement('label');
+      selectAllLabel.textContent = 'Select All Reviewers';
+      const brek = document.createElement('br');
+      reviewersSelect.appendChild(selectAllCheckbox);
+      reviewersSelect.appendChild(selectAllLabel);
+      reviewersSelect.appendChild(brek);
+
+      users.forEach(user => {
+        if (user.role === 'Reviewer') {
+          const checkbox = document.createElement('input');
+          checkbox.type = 'checkbox';
+          checkbox.value = user.email;
+          checkbox.id = `reviewer-${user.email}`;
+          const label = document.createElement('label');
+          label.setAttribute('for', checkbox.id);
+          label.textContent = user.name;
+          const brek = document.createElement('br');
+          reviewersSelect.appendChild(checkbox);
+          reviewersSelect.appendChild(label);
+          reviewersSelect.appendChild(brek);
+        }
+        if (user.role === 'Approver') {
+          const option = document.createElement('option');
+          option.value = user.email;
+          option.textContent = user.name;
+          approverSelect.appendChild(option);
+        }
+      });
+    }
+
+    // Toggle Select All Reviewers checkbox
+    function toggleAllReviewers() {
+      const selectAllCheckbox = document.getElementById('select-all');
+      const reviewerCheckboxes = document.querySelectorAll('#reviewers-checkboxes input[type="checkbox"]:not(#select-all)');
+      reviewerCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAllCheckbox.checked;
+      });
+    }
+
+    // Document Upload Form Submission (Track document, reviewers, and approvers)
+    document.getElementById('upload-form').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const documentFile = document.getElementById('document-file').files[0];
+      const reviewerEmails = Array.from(document.querySelectorAll('#reviewers-checkboxes input[type="checkbox"]:checked'))
+        .map(checkbox => checkbox.value);
+      const approverEmail = document.getElementById('approver').value;
+
+
+      const allEmails = reviewerEmails.concat(approverEmail);
+      const uniqueEmails = new Set(allEmails);
+      if (uniqueEmails.size !== allEmails.length) {
+        alert('Error: Duplicate emails are not allowed within the same document.');
+        return;
+      }
+
+      const reviewers = users.filter(user => reviewerEmails.includes(user.email));
+      const approver = users.find(user => user.email === approverEmail);
+
+      if (!approver) {
+        alert('Error: Approver not found.');
+        return;
+      }
+
+      const formData = [];
+      formData.unshift('name',documentFile.name)
+      formData.unshift('file', documentFile);
+      formData.unshift('reviewers', JSON.stringify(reviewers));
+      formData.unshift('approver', JSON.stringify(approver));
+      dataArray = formData
+      const jsonObject = {}; for (let i = 0; i < dataArray.length; i += 2) { const key = dataArray[i]; const value = dataArray[i + 1]; jsonObject[key] = typeof value === 'string' && value.startsWith('{') ? JSON.parse(value) : value; }
+      console.log(jsonObject)
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${documentFile.name}</td>
+        <td>${reviewers.map(r => r.name).join(', ')}</td>
+        <td>${approver.name}</td>
+        <td>${"pending"}</td>
+      `;
+
+      // Send document details to the backend
+      const app = {}; // Define the app variable
+      // Your code that uses app
+      document.getElementById('document-tracking').appendChild(row);
+      async function sendDocumentDetailsToBackend(jsonObject) {
+  try {
+    let response = await fetch('https://saikiranganta2003.github.io/adminPageing/routes/documents', { // Ensure the path matches your backend route
+      method: 'post',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(jsonObject),
+    });
+  
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    let request = await response.json();
+    console.log('Response from backend:', request);
+    
+
+  } catch (error) {
+    console.error('Error:', error.message);
+  }
+
+}
+
+// Example usage: Replace this JSON object with your actual data
+
+// Call the function to send data to the backend
+      sendDocumentDetailsToBackend(jsonObject);
+      sendEmailsToReviewersAndApprover( JSON.stringify(reviewers), JSON.stringify(approver))
+
+      
+    });
+  
+    // Send emails to reviewers and approver via backend
+     async function sendEmailsToReviewersAndApprover(reviewers, approver) {
+      const emailData = { reviewers, approver };
+        await fetch('api/adminPageing/routes/notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(emailData)
+      })
+        .then(response => response.json())
+        .then(data => console.log('Emails sent successfully:', data))
+        .catch(error => console.error('Error sending emails:', error));
+    }
+
+  </script>
+</body>
+
+</html>

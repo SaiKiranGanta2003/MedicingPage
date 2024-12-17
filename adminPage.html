@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Management</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css">
+    <style>
+        @media screen and (max-width: 768px) {
+            #user-list {
+                width: 100%;
+                overflow-x: scroll;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                overflow-y: hidden;
+            }
+
+        }
+    </style>
+</head>
+
+<body>
+    <header class="bg-primary" style="width: 100%;position: relative;top:0;padding: 20px;color: white;">
+        <h3>Medicing Enterprises - ADMIN DASHBOARD</h3>
+    </header>
+    <div class="container mt-5"
+        style="border: black 2px solid;padding: 30px;border-radius: 20px;box-shadow: 2px 2px 2px black;">
+        <h2>User Management</h2>
+        <form id="user-form" class="mb-4">
+            <div class="mb-3">
+                <label for="user-name" class="form-label">Name</label>
+                <input type="text" id="user-name" class="form-control" placeholder="Enter user name" required>
+            </div>
+            <div class="mb-3">
+                <label for="user-company" class="form-label">Company name</label>
+                <input type="text" id="user-company" class="form-control" placeholder="Enter Company name" required>
+            </div>
+            <div class="mb-3">
+                <label for="EmployeeID" class="form-label">EmployeeID</label>
+                <input type="text" id="EmployeeID" class="form-control" placeholder="Enter EmployeeID" required>
+            </div>
+            <div class="mb-3">
+                <label for="Department" class="form-label">Department</label>
+                <input type="text" id="Department" class="form-control" placeholder="Enter Department" required>
+            </div>
+            <div class="mb-3">
+                <label for="Designation" class="form-label">Designation</label>
+                <input type="text" id="Designation" class="form-control" placeholder="Enter Designation" required>
+            </div>
+            <div class="mb-3">
+                <label for="userID" class="form-label">User ID</label>
+                <input type="text" id="userID" class="form-control" placeholder="Enter userID" required>
+            </div>
+            <div class="mb-3">
+                <label for="user-email" class="form-label">Email</label>
+                <input type="email" id="user-email" class="form-control" placeholder="Enter user email" required>
+            </div>
+            <div class="mb-3">
+                <label for="user-role" class="form-label">Role</label>
+                <br>
+                <!-- <input type="checkbox" id="user-role" class="form-select" required> -->
+                <input class="form-check-input" type="checkbox" id="user-role" value="User"><span
+                    style="margin-left: 10px;">User</span></option><br>
+                <input class="form-check-input" type="checkbox" id="user-role" value="Reviewer"><span
+                    style="margin-left: 10px;">Reviewer</span></option><br>
+                <input class="form-check-input" type="checkbox" id="user-role" value="Approver"><span
+                    style="margin-left: 10px;">Approver</span></option><br>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary">Add User</button>
+        </form>
+
+        <table class="table table-striped" id="user-list">
+            <thead>
+                <tr>
+                    <th>EmployeeID</th>
+                    <th>Name</th>
+                    <th>Role</th>
+                    <th>Email</th>
+                    <th>Status</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+    </div>
+    <footer class="mt-5 bg-primary" style="width: 100%;position: relative;bottom:0;padding: 20px;color: white;">
+        <p>&copy; <span id="year"></span> Medicing Enterprises. All rights reserved.</p>
+
+
+    </footer>
+    <script>
+
+        document.getElementById('year').textContent = new Date().getFullYear();
+        const userForm = document.getElementById('user-form');
+        const userTable = document.querySelector('#user-list tbody');
+
+        // Add User Event Listener
+
+
+        userForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('user-name').value.trim();
+            const email = document.getElementById('user-email').value.trim();
+            const role = [];
+            document.querySelectorAll('#user-role').forEach((checkbox) => {
+                if (checkbox.checked) {
+                    role.push(checkbox.value);
+                }
+            });
+            if (role.length == 0) {
+                alert('Please select at least one role.');
+                return;
+            }
+            const company = document.getElementById('user-company').value;
+            const EmployeeID = document.getElementById('EmployeeID').value;
+            const Department = document.getElementById('Department').value;
+            const Designation = document.getElementById('Designation').value;
+            const userID = document.getElementById('userID').value;
+
+            if (!name || !email || !role) {
+                alert('Please fill in all fields.');
+                return;
+            }
+
+            const newUser = { name: name, email: email, role: role, companyName: company, EmployeeID: EmployeeID, Department: Department, Designation: Designation, userID: userID, status: "Created" };
+
+            // Log the data to ensure it's correct
+            console.log('New User Data:', newUser);
+
+            // Add user row to the table
+            //    addUserRow(newUser);
+
+            // Save user to the database
+            try {
+                await saveToDB(newUser);
+                alert('User added successfully.');
+            } catch (error) {
+                console.error('Error adding user:', error);
+                alert('Failed to add user.');
+            }
+
+            // Reset the form
+            userForm.reset();
+        });
+
+
+        // Add Row to Table
+        function addUserRow(user) {
+            let row = `
+        <tr>
+            <td>${user.EmployeeID}</td>
+            <td>${user.name}</td>
+            <td>${user.role}</td>
+            <td>${user.email}</td>
+            <td>${user.status}</td>
+            <td>${(user.created_at).toString().slice(0, 10)}</td>
+            <td>
+                <button class="btn btn-warning btn-sm" onclick="editUser('${user.EmployeeID}')">Edit</button>
+            `;
+
+            if (user.status === 'Deactive') {
+                row += `
+                <button class="btn btn-success btn-sm" onclick="active('${user.EmployeeID}')">Active</button>
+            </td>
+        </tr>`;
+            } else if (user.status === 'Created') {
+                row += `
+            </td>
+        </tr>`;
+            } else {
+                row += `
+                <button class="btn btn-danger btn-sm" onclick="deactive('${user.EmployeeID}')">Deactive</button>
+            </td>
+        </tr>`;
+            }
+            userTable.innerHTML += row;
+        }
+
+
+
+        let logoutTimer;    
+        // Function to log out the user
+        function logout() {
+            alert("You have been logged out due to inactivity.");
+            window.location.href = "/logout"; // Replace "/logout" with your logout URL
+        }
+
+        // Function to reset the logout timer
+        function resetTimer() {
+            clearTimeout(logoutTimer);
+            logoutTimer = setTimeout(logout, 5 * 60 * 1000); // 5 minutes in milliseconds
+        }
+
+        // Event listeners for user activity
+        window.addEventListener("mousemove", resetTimer);
+        window.addEventListener("keydown", resetTimer);
+        window.addEventListener("click", resetTimer);
+
+        // Start the initial logout timer
+        resetTimer();
+
+        async function deactive(id) {
+            const response = await fetch('/deactiveUser', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            })
+            userTable.innerHTML = "";
+            getitems();
+        };
+
+        // Edit User
+        function editUser(button) {
+            const row = button.closest('tr');
+            const cells = row.getElementsByTagName('td');
+
+            const name = cells[0].textContent;
+            const role = cells[1].textContent;
+            const id = cells[2].textContent;
+
+            const newRole = prompt('Enter new role (User/Reviewer/Approver):', role) || role;
+
+            if (newRole) {
+                cells[1].textContent = newRole;
+                updateDB({ email: id, role: newRole });
+            }
+        }
+
+        // Delete User
+        function deleteUser(button) {
+            const row = button.closest('tr');
+            const id = row.getElementsByTagName('td')[2].textContent;
+            row.remove();
+            console.log(id)
+            try {
+                deleteFromDB(id);
+                alert('User deleted successfully.');
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Failed to delete user.');
+            }
+        }
+
+        // Save User to Database
+        async function saveToDB(user) {
+            const response = await fetch('./addDataToDb', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(user),
+            });
+            userTable.innerHTML = "";
+            console.log(response);
+
+            for (let i = 0; i <= response.length - 1; i++) {
+                addUserRow(response[i]);
+            }
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // Log the response from the backend
+            const responseData = await response.json();
+            console.log('Server Response:', responseData);
+            for (let i = 0; i <= responseData.length - 1; i++) {
+                addUserRow(responseData[i]);
+            }
+            return responseData;
+        }
+
+        async function active(id) {
+            const response = await fetch('/activeUser', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id }),
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            const responseData = await response.json();
+            console.log('Server Response:', responseData);
+            userTable.innerHTML = "";
+            getitems();
+        }
+
+        // Update User in Database
+        async function updateDB(user) {
+            console.log('Updating DB:', user);
+            // Implement database update logic
+            const response = await fetch('/routes/users/update', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(user),
+            });
+        }
+
+        // Delete User from Database
+        async function deleteFromDB(email) {
+            console.log('Deleting from DB:', email);
+
+            // Implement database delete logic
+            const response = await fetch('/routes/users/delete', {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email }),
+            });
+        }
+
+
+
+        async function getitems() {
+            const response = await fetch('/routes/showUsers');
+            const data = await response.json();
+            for (let i = 0; i <= data.length - 1; i++) {
+                addUserRow(data[i]);
+            }
+        }
+        getitems();
+    </script>
+</body>
+
+</html>
